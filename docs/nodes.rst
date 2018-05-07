@@ -370,7 +370,7 @@ This is best illustrated by example::
 If we wanted to compute the cumulative product of this random value you could do it by
 creating a new node using the :py:func:`cumprodnode` decorator::
 
-    @cumprodnode(half_life=10)
+    @cumprodnode
     def cumulative_product_of_random_value():
         return random_value()
 
@@ -397,7 +397,7 @@ created node. This allows for chaining, e.g.::
 
     @evalnode
     def some_other_node():
-        ewam_of_random_value_node = random_value.cumprodnode(half_life=10)
+        ewam_of_random_value_node = random_value.cumprodnode()
         delayed_cumprod = ewam_of_random_value_node.delay(periods=10, initial_value=1)
 
         # do some more calculation
@@ -407,7 +407,17 @@ Or more simply::
 
     @evalnode
     def some_other_node():
-        delayed_cumprod = random_value.cumprodnode(half_life=10).delay(periods=10, initial_value=1)
+        delayed_cumprod = random_value.cumprodnode().delay(periods=10, initial_value=1)
 
         # do some more calculation
         return result
+
+We can evaluate this code with::
+
+    import mdf
+    from datetime import timedelta
+    ctx = mdf.MDFContext(mdf.now()-timedelta(days=20))
+
+    for _ in range(20):
+        print(ctx[some_other_node])
+        ctx.now += timedelta(days=1)
