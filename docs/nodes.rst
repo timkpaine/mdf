@@ -359,7 +359,7 @@ a new node using the node type decorator was used.
 
 This is best illustrated by example::
 
-    from mdf import evalnode, cumprod
+    from mdf import evalnode, cumprodnode
     from random import random
 
     @evalnode
@@ -368,7 +368,7 @@ This is best illustrated by example::
             yield random() 
 
 If we wanted to compute the cumulative product of this random value you could do it by
-creating a new node using the :py:func:`cumprod` decorator::
+creating a new node using the :py:func:`cumprodnode` decorator::
 
     @cumprodnode(half_life=10)
     def cumulative_product_of_random_value():
@@ -398,7 +398,7 @@ created node. This allows for chaining, e.g.::
     @evalnode
     def some_other_node():
         ewam_of_random_value_node = random_value.cumprodnode(half_life=10)
-        delayed_cumprod = ewam_of_random_value_node.delay(periods=10, initial_value=0)
+        delayed_cumprod = ewam_of_random_value_node.delay(periods=10, initial_value=1)
 
         # do some more calculation
         return result
@@ -407,7 +407,7 @@ Or more simply::
 
     @evalnode
     def some_other_node():
-        delayed_cumprod = random_value.cumprodnode(half_life=10).delay(periods=10, initial_value=0)
+        delayed_cumprod = random_value.cumprodnode(half_life=10).delay(periods=10, initial_value=1)
 
         # do some more calculation
         return result
