@@ -8,7 +8,7 @@ from mdf import (
     shift,
 )
 from numpy.testing.utils import assert_array_almost_equal
-from pandas.core import datetools
+from pandas.tseries.offsets import YearEnd
 
 import pandas as pd
 import unittest
@@ -31,7 +31,7 @@ def D():
 
 class ContextTest(unittest.TestCase):
     def setUp(self):
-        self.daterange = pd.bdate_range(datetime(1970, 1, 1), periods=3, freq=datetools.yearEnd)
+        self.daterange = pd.bdate_range(datetime(1970, 1, 1), periods=3, freq=YearEnd)
         self.ctx = MDFContext()
 
     def test_shift(self):
