@@ -61,7 +61,7 @@ class PickleTest(unittest.TestCase):
     def test_node_method_pickle(self):
         # get another node via a nodetype method
         # use nan in the args as there were problems pickling/unpicking nan
-        node = A.samplenode(initial_value=np.nan, offset=pa.datetools.BMonthEnd())
+        node = A.samplenode(initial_value=np.nan, offset=pa.tseries.offsets.BMonthEnd())
         
         # test text and binary pickle formats
         for protocol in (0, pickle.HIGHEST_PROTOCOL):
