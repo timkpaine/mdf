@@ -1,6 +1,7 @@
 """
 Tests for scenario analysis using multprocessing
 """
+from __future__ import print_function
 import unittest
 from mdf.builders.basic import DataFrameBuilder
 from mdf import MDFContext, run, varnode, evalnode, now

@@ -1,8 +1,8 @@
 """
 Functions to provide pickle support to MDF classes
 """
-from nodes import MDFNode, MDFVarNode, NodeState
-from context import MDFContext, ShiftSet
+from .nodes import MDFNode, MDFVarNode, NodeState
+from .context import MDFContext, ShiftSet
 import cython
 import sys
 import logging

@@ -10,8 +10,8 @@ import types
 import os
 import re
 from .parser import tokenize, get_assigned_node_name
-from context import MDFContext, MDFNodeBase
-from common import DIRTY_FLAGS
+from .context import MDFContext, MDFNodeBase
+from .common import DIRTY_FLAGS
 
 # these are cimported in nodes.pxd
 # uncomment if not compiling with Cython
