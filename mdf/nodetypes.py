@@ -1063,8 +1063,8 @@ class _samplenode(MDFIterator):
     samples value on the given date offset and yields that value
     until the next date offset.
     
-    offset is a pandas.datetools.DateOffset instance,
-    eg pandas.datetools.BMonthEnd()
+    offset is a pandas.tseries.DateOffset instance,
+    eg pandas.tseries.BMonthEnd()
     """    
     _init_kwargs_ = ["filter_node_value", "offset", "date_node", "initial_value"]
 
@@ -1907,7 +1907,7 @@ def _lookaheadnode(value_unused, owner_node, periods, filter_node=None, offset=p
     
     The dates start with the current context date (i.e. :py:func:`now`) and is
     incremented by the optional argument `offset` which defaults to weekdays
-    (see :py:class:`pandas.datetools.BDay`).
+    (see :py:class:`pandas.tseries.offsets.BDay`).
 
     :param int periods: the total number of observations to collect, excluding any that are ignored due
                         to any filter being used.
