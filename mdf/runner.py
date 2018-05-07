@@ -12,6 +12,7 @@ import inspect
 import sys
 import atexit
 import time
+import multiprocessing
 import multiprocessing.util
 from multiprocessing import Process, Pipe
 
@@ -301,11 +302,11 @@ def _multprocessing_exit():
     """
     multiprocessing.util._exiting = True
     multiprocessing.util._run_finalizers(0)
-    for p in multiprocessing.util.active_children():
+    for p in multiprocessing.active_children():
         if p._daemonic:
             p._popen.terminate()
 
-    for p in multiprocessing.util.active_children():
+    for p in multiprocessing.active_children():
         p.join()
 
     multiprocessing.util._run_finalizers()
