@@ -99,7 +99,7 @@ Let's assume you end up with something like this::
     for z in range(100):
         c = C(x, y, z)
         a = A(a, y, c)
-        print a, c
+        print(a, c)
 
 Now you notice that computing ``B`` every time is expensive and unnecessary. You
 refactor out ``B`` to improve performance::
@@ -125,7 +125,7 @@ refactor out ``B`` to improve performance::
     for z in range(100):
         c = C(x, y, z)
         a = A(b, c)
-        print a, c
+        print(a, c)
 
 This is a contrived example, but even so it's starting to feel untidy and every
 other reference of ``A`` and ``B`` needs to be refactored.
@@ -135,7 +135,7 @@ Below is some example code using *mdf* that does the same as the code above.
 Don't worry that some terms referenced in this code have not been mentioned
 yet, this is just to give an idea of how this code can be written::
 
-    from mdf import MDFContext, varnode, evalnode,
+    from mdf import MDFContext, varnode, evalnode
 
     # varnode creates nodes that have values in a context
     x = varnode()
@@ -168,7 +168,7 @@ yet, this is just to give an idea of how this code can be written::
         ctx[z] = z_i
 
         # getting the values from the context evaluates them and returns the results
-        print ctx[A], ctx[C]
+        print(ctx[A], ctx[C])
 
 Nodes are evaluated lazily and only re-computed when their dependecies have been
 updated. This means that in the example above ``B`` is only calculated once as
