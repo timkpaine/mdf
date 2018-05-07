@@ -63,7 +63,7 @@ Nodes Types
 
 .. autofunction:: applynode(func, [, args=()] [, kwargs={}] [, category])
 
-.. autofunction:: lookaheadnode(func, periods [, offset=pa.datetools.BDay()] [, filter] [, category])
+.. autofunction:: lookaheadnode(func, periods [, offset=pa.tseries.offsets.BDay()] [, filter] [, category])
 
 .. _node_factories:
 
