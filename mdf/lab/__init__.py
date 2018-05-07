@@ -8,8 +8,9 @@ import logging
 from functools import partial
 from datetime import datetime
 from collections import namedtuple, Sequence
-from pandas.core import datetools
-from pandas.core.datetools import BDay
+from pandas._libs import tslib
+from pandas.tseries.offsets import BDay
+from pandas.tseries.frequencies import getOffset
 
 from mdf.nodes import MDFNode, MDFVarNode, now
 from mdf.runner import plot
@@ -177,7 +178,7 @@ class MDFMagics(Magics):
         if parameter_s:
             now = _parse_datetime(parameter_s, self.shell.user_global_ns, self.shell.user_ns)
         else:
-            now = datetools.normalize_date(datetime.now())
+            now = tslib.normalize_date(datetime.now())
         ctx = MDFContext(now)
         ctx._activate_ctx()
 
@@ -193,7 +194,7 @@ class MDFMagics(Magics):
         or: %mdf_timestep WEEKDAY
         """
         if parameter_s:
-            self.__timestep = datetools.getOffset(parameter_s)
+            self.__timestep = getOffset(parameter_s)
         return self.__timestep
 
     @line_magic
@@ -580,14 +581,14 @@ def _parse_datetime(arg, global_ns={}, local_ns={}):
         return datetime(arg / 10000, (arg / 100) % 100, arg % 100)
 
     # Attempt to use the standard datetime parsing
-    parsed = datetools.to_datetime(arg)
+    parsed = pd.to_datetime(arg)
     if isinstance(parsed, datetime):
         return parsed
 
     # if the parsing failed, try to evaluate the string
     try:
         dt = eval(arg, global_ns, local_ns)
-        return datetools.to_datetime(dt)
+        return pd.to_datetime(dt)
     except NameError:
         pass
 
@@ -679,7 +680,7 @@ def load_ipython_extension(ip):
         ip.register_magics(MDFMagics)
 
         # create the ambient context
-        today = datetools.normalize_date(datetime.now())
+        today = tslib.normalize_date(datetime.now())
         ctx = MDFContext(today)
         ctx._activate_ctx()
 
