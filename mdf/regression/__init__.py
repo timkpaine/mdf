@@ -21,6 +21,7 @@ import threading
 import platform
 import time
 import select
+import shutil
 from subprocess import Popen, PIPE, STDOUT
 from ..context import MDFContext
 from ..nodes import evalnode
@@ -115,16 +116,26 @@ def _start_pyro_subprocess(python_exe, side, modulenames=[],
         try:
             script_contents = dist.get_metadata("scripts/mdf_pyro_server.py")
         except IOError:
-            # if the metadata version wasn't found it's probably
-            # running from a local checkout so look for the script
-            # relative to this file
-            path = os.path.dirname(__file__)
-            script = os.path.join(path, "..", "..", "bin", "mdf_pyro_server.py")
+            try:
+                if hasattr(shutil, 'which'):
+                    script = shutil.which('mdf_pyro_server.py')
+                else:
+                    from distutils.spawn import find_executable
+                    script = find_executable('mdf_pyro_server.py')
+            except AttributeError:
+                pass
+
+            if not script:
+                # if the metadata version wasn't found it's probably
+                # running from a local checkout so look for the script
+                # relative to this file
+                path = os.path.dirname(__file__)
+                script = os.path.join(path, "..", "..", "bin", "mdf_pyro_server.py")
         else:
             # got the script from the metadata, now write it to a tempfile
             fd, script = tempfile.mkstemp(".py")
             _temp_files.append(script)
-    
+
             fh = os.fdopen(fd, "wt")
             fh.write(script_contents)
             fh.close()
