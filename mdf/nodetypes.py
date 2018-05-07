@@ -1887,7 +1887,7 @@ class MDFLookAheadNode(MDFCustomNode):
         # return True if date is going backwards to indicate we should be marked as dirty
         return ctx.get_date() > date
 
-def _lookaheadnode(value_unused, owner_node, periods, filter_node=None, offset=pa.datetools.BDay()):
+def _lookaheadnode(value_unused, owner_node, periods, filter_node=None, offset=pa.tseries.offsets.BDay()):
     """
     Node type that creates an :py:class:`MDFNode` that returns
     a pandas Series of values of the underlying node for a sequence
