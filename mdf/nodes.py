@@ -9,14 +9,15 @@ import copy
 import types
 import os
 import re
+from six import iteritems, itervalues
 from .parser import tokenize, get_assigned_node_name
 from .context import MDFContext, MDFNodeBase
 from .common import DIRTY_FLAGS
 
 # these are cimported in nodes.pxd
 # uncomment if not compiling with Cython
-#from context import _get_current_context, _get_context, _profiling_enabled
-#from cqueue import *
+# from context import _get_current_context, _get_context, _profiling_enabled
+# from .cqueue import *
 
 _logger = logging.getLogger(__name__)
 _trace_enabled = cython.declare(int, False)
@@ -38,7 +39,7 @@ _unpickle_node = None
 
 def _lazy_imports():
     global _pickle_node, _unpickle_node
-    import ctx_pickle
+    from mdf import ctx_pickle
     _pickle_node = ctx_pickle._pickle_node
     _unpickle_node = ctx_pickle._unpickle_node
 
@@ -195,13 +196,13 @@ class NodeState(object):
             "callers: %s" % ( 
                 ("\n\t\t" +
                 "\n\t\t".join("<ctx %d> : %s" % (
-                    k, "\n\t\t\t".join([n.name for n in v])) for k, v in self.callers.iteritems()))
+                    k, "\n\t\t\t".join([n.name for n in v])) for k, v in iteritems(self.callers)))
                 if self.callers else ""
             ),
             "callees: %s" % ( 
                 ("\n\t\t" +
                 "\n\t\t".join("<ctx %d> : %s" % (
-                    k, "\n\t\t\t".join([n.name for n in v])) for k, v in self.callees.iteritems()))
+                    k, "\n\t\t\t".join([n.name for n in v])) for k, v in iteritems(self.callees)))
                 if self.callees else ""
             ),
         ]) + "\n</NodeState>"
@@ -531,7 +532,7 @@ class MDFNode(MDFNodeBase):
         """
         node_state = self._get_state(ctx)
         results = []
-        for ctx_id, callees in node_state.callees.iteritems():
+        for ctx_id, callees in iteritems(node_state.callees):
             ctx = _get_context(ctx_id, ctx)
             for callee in callees:
                 results.append((callee, ctx))
@@ -570,7 +571,7 @@ class MDFNode(MDFNodeBase):
         """
         node_state = self._get_state(ctx)
         results = []
-        for ctx_id, callers in node_state.callers.iteritems():
+        for ctx_id, callers in iteritems(node_state.callers):
             ctx = _get_context(ctx_id, ctx)
             for callee in callers:
                 results.append((callers, ctx))
@@ -672,13 +673,13 @@ class MDFNode(MDFNodeBase):
 
             # clear any alt_contexts set in any of shifted contexts that
             # have their alt state set to this one
-            for other_state in caller._states.itervalues():
+            for other_state in itervalues(caller._states):
                 if other_state.alt_context is not None \
                 and other_state.alt_context._id == node_state.ctx_id:
                     other_state.alt_context = None
 
             # add any nodes that called this one to the list to be cleared
-            for ctx_id, callers in node_state.callers.iteritems():
+            for ctx_id, callers in iteritems(node_state.callers):
                 for caller in callers:
                     node_state = caller._states[ctx_id]
                     cqueue_push(to_clear, (caller, node_state))
@@ -733,7 +734,7 @@ class MDFNode(MDFNodeBase):
                 continue
 
             # add the callees of this node to the search
-            for ctx_id, callees in callee_state.callees.iteritems():
+            for ctx_id, callees in iteritems(callee_state.callees):
                 for callee in callees:
                     cqueue_push(remaining_callees, (ctx_id, callee))
 
@@ -860,7 +861,7 @@ class MDFNode(MDFNodeBase):
                 node_state.value = None
 
             # add this node's callers to the list to process
-            for ctx_id, callers in node_state.callers.iteritems():
+            for ctx_id, callers in iteritems(node_state.callers):
                 for caller in callers:
                     try:
                         caller_state = caller._states[ctx_id]
@@ -897,7 +898,7 @@ class MDFNode(MDFNodeBase):
             # mark any calling nodes as dirty
             caller = cython.declare(MDFNode)
             caller_state = cython.declare(NodeState)
-            for ctx_id, callers in node_state.callers.iteritems():
+            for ctx_id, callers in iteritems(node_state.callers):
                 for caller in callers:
                     try:
                         caller_state = caller._states[ctx_id]
@@ -1364,7 +1365,7 @@ def vargroup(group_name=None, **kwargs):
         >>> params.attr2()
         5
     """
-    attribs = dict([(k, varnode(k, default=v, category=group_name)) for k, v in kwargs.iteritems()])
+    attribs = dict([(k, varnode(k, default=v, category=group_name)) for k, v in iteritems(kwargs)])
     cls_name = "%s__%s" % (group_name, str(uuid.uuid4()))
     return _VarGroupMeta(cls_name, bases=(object,), dict=attribs, group_name=group_name)
 
@@ -1693,7 +1694,7 @@ class MDFEvalNode(MDFNode):
 
         shift_set = cython.declare(dict)
         shift_set = {}
-        for shifted_node, shifted_value in ctx_shift_set.iteritems():
+        for shifted_node, shifted_value in iteritems(ctx_shift_set):
             # if the context is shifted by self then include self in the shift set
             if shifted_node is self:
                 shift_set[shifted_node] = shifted_value
@@ -1715,7 +1716,7 @@ class MDFEvalNode(MDFNode):
         callee_ctx = cython.declare(MDFContext)
         alt_state = cython.declare(NodeState)
         alt_state = self._get_state(alt_ctx)
-        for ctx_id, callees in node_state.callees.iteritems():
+        for ctx_id, callees in iteritems(node_state.callees):
             callee_ctx = _get_context(ctx_id)
             for callee in callees:
                 self.add_dependency(alt_ctx, callee, callee_ctx)

@@ -5,14 +5,16 @@ from datetime import datetime
 import cython
 import warnings
 import sys
+from six import iteritems, iterkeys, itervalues
 from .common import DIRTY_FLAGS
 from . import io
 
 # this is usually cimported in context.pxd
 # uncomment if not compiling with Cython
-# from cqueue import *
-# import thread
-# PyThread_get_thread_ident = thread.get_ident
+# from mdf.cqueue import *
+
+# import threading
+# PyThread_get_thread_ident = threading.get_ident
 
 DIRTY_FLAGS_NONE = cython.declare(int, DIRTY_FLAGS.NONE)
 DIRTY_FLAGS_ALL  = cython.declare(int, DIRTY_FLAGS.ALL)
@@ -115,12 +117,12 @@ def _lazy_imports():
     # import MDFNode after this module has been imported
     # to avoid circular import dependencies
     global MDFNode, _now_node
-    import nodes
+    from mdf import nodes
     MDFNode = nodes.MDFNode
     _now_node = nodes._now_node
 
     global _pickle_context, _unpickle_context
-    import ctx_pickle
+    from mdf import ctx_pickle
     _pickle_context = ctx_pickle._pickle_context
     _unpickle_context = ctx_pickle._unpickle_context
 
@@ -213,7 +215,7 @@ def _nownodevalue_unpickle(value):
     return NowNodeValue(value)
 
 def _make_shift_key(shift_set):
-    key = [(id(node), value) for (node, value) in shift_set.iteritems()]
+    key = [(id(node), value) for (node, value) in iteritems(shift_set)]
     key.sort()
     return tuple(key)
 
@@ -395,7 +397,7 @@ class MDFContext(object):
             # - or unless the shifted node already has an alt context other than this one,
             # as it must already be set in that context and so there's no need to set
             # it in this one.
-            for node, value in self._shift_set.iteritems():
+            for node, value in iteritems(self._shift_set):
                 if node is not _now_node:
                     if isinstance(value, MDFNode) \
                     or node.get_alt_context(self) is self:
@@ -423,7 +425,7 @@ class MDFContext(object):
         """
         clears all cached data for this context
         """
-        for node in _all_nodes.itervalues():
+        for node in itervalues(_all_nodes):
             node.clear(self)
 
         self._incrementally_updated_nodes.clear()
@@ -433,7 +435,7 @@ class MDFContext(object):
         self._has_nodes_requiring_set_date_callback = False
 
         # clear the shifted contexts
-        for shifted_ctx in self._shifted_cache.itervalues():
+        for shifted_ctx in itervalues(self._shifted_cache):
             shifted_ctx.clear()
 
         # remove any references to shifted contexts
@@ -450,7 +452,7 @@ class MDFContext(object):
         if not _all_nodes:
             return
         # clear any nodes that have cached state for this context
-        for node in _all_nodes.itervalues():
+        for node in itervalues(_all_nodes):
             node.clear(self)
 
     def __str__(self):
@@ -557,7 +559,7 @@ class MDFContext(object):
     def iter_shifted_contexts(self):
         if _python_version > 2:
             return self._shifted_contexts.keys()
-        return self._shifted_contexts.iterkeys()
+        return iterkeys(self._shifted_contexts)
 
     @classmethod
     def register_node(cls, node):
@@ -751,7 +753,7 @@ class MDFContext(object):
 
             # mark any incrementally updated nodes as dirty
             if ctx._has_incrementally_updated_nodes:
-                for node in ctx._incrementally_updated_nodes.iterkeys():
+                for node in iterkeys(ctx._incrementally_updated_nodes):
                     node.set_dirty(ctx, DIRTY_FLAGS_TIME)
 
         # mark any nodes that indicated they would become dirty after calling 'on_set_date'
@@ -770,7 +772,7 @@ class MDFContext(object):
             # updated nodes so they'll start from their initial values again
             for ctx in all_contexts:
                 # clear any cached values for the incrementally updated nodes
-                for node in ctx._incrementally_updated_nodes.iterkeys():
+                for node in iterkeys(ctx._incrementally_updated_nodes):
                     node.clear_value(ctx)
 
                 # these will be re-established as the date is incremented
@@ -1027,7 +1029,7 @@ class MDFContext(object):
         returns a set of all nodes that have been called in this context
         """
         nodes_with_value = set()
-        for node in _all_nodes.itervalues():
+        for node in itervalues(_all_nodes):
             if node.has_value(self) or node.was_called(self):
                 nodes_with_value.add(node)
         return nodes_with_value
@@ -1108,7 +1110,7 @@ class MDFContext(object):
 
         ctx = cython.declare(MDFContext)
 
-        nodes_without_value = set(_all_nodes.itervalues())
+        nodes_without_value = set(itervalues(_all_nodes))
         nodes_with_value = set()
 
         all_timers = {}
@@ -1120,7 +1122,7 @@ class MDFContext(object):
                     nodes_with_value.add(node)
                     nodes_without_value.remove(node)
 
-            for obj, timer in ctx._timers.iteritems():
+            for obj, timer in iteritems(ctx._timers):
                 if isinstance(obj, MDFNodeBase):
                     name = obj.name
                 elif hasattr(obj, "__name__"):
@@ -1330,7 +1332,7 @@ def get_nodes(category=None):
 
     # get all nodes matching categories    
     nodes = []
-    for node in _all_nodes.itervalues():
+    for node in itervalues(_all_nodes):
         if categories.intersection(node.categories):
             nodes.append(node)
 
