@@ -31,7 +31,7 @@ def D():
 
 class ContextTest(unittest.TestCase):
     def setUp(self):
-        self.daterange = pd.bdate_range(datetime(1970, 1, 1), periods=3, freq=YearEnd)
+        self.daterange = pd.bdate_range(datetime(1970, 1, 1), periods=3, freq=YearEnd())
         self.ctx = MDFContext()
 
     def test_shift(self):
